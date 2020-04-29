@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.1.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Networks.Algorithms">
+      <HintPath>..\GraphService\ReferenceBinaries\Networks.Algorithms.dll</HintPath>
+    </Reference>
+    <Reference Include="Networks.Core">
+      <HintPath>..\GraphService\ReferenceBinaries\Networks.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Networks.FCM">
+      <HintPath>..\GraphService\ReferenceBinaries\Networks.FCM.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+
+</Project>
