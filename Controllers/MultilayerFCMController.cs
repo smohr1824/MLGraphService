@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Policy;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +16,13 @@ namespace MLGraphService.Controllers
     public class MultilayerFCMController : ControllerBase
     {
 
-        private Dictionary<string, MultilayerFuzzyCognitiveMap> map = new Dictionary<string, MultilayerFuzzyCognitiveMap>();
+        private static Dictionary<string, MultilayerFuzzyCognitiveMap> map = new Dictionary<string, MultilayerFuzzyCognitiveMap>();
 
 
         [HttpGet("{name}/execute")]
-        public ActionResult<IEnumerable<MultilayerCognitiveConceptState>> Execute(string name, int generations, string[] concepts)
+        public ActionResult<Dictionary<string, MultilayerCognitiveConceptState[]>> Execute(string name, int generations = 1)
         {
-            
+            Dictionary<string, MultilayerCognitiveConceptState[]> results = new Dictionary<string, MultilayerCognitiveConceptState[]>(); 
             if (name == null || name == string.Empty)
                 return BadRequest("Name cannot be null or empty.");
 
@@ -38,16 +39,31 @@ namespace MLGraphService.Controllers
                 return NotFound();
             }
 
-            if (!CheckNames(concepts, fcm))
-                return BadRequest("One or more requested concepts are not in the map.");
-            fcm.Reset();
 
+            fcm.Reset();
+            foreach (MultilayerCognitiveConcept cog in fcm.Concepts.Values)
+            {
+                MultilayerCognitiveConceptState[] data = new MultilayerCognitiveConceptState[generations];
+                results.Add(cog.Name, data);
+            }
+                
+            
             // iterate and return results
             for (int i = 0; i < generations; i++)
             {
                 fcm.StepWalk();
                 // report the desired concepts and their levels
+  
+                foreach (MultilayerCognitiveConcept cog in fcm.Concepts.Values)
+                {
+                    MultilayerCognitiveConceptState[] data = results[cog.Name];
+                    MultilayerCognitiveConceptState state = MakeStateFromCognitiveConcept(cog);
+                    data[i] = state;
+                }
+                
             }
+
+            return results;
             
         }
         // POST: api/Multilayer/FCM
@@ -109,6 +125,25 @@ namespace MLGraphService.Controllers
             }
 
             return true;
+        }
+
+        private MultilayerCognitiveConceptState MakeStateFromCognitiveConcept(MultilayerFuzzyCognitiveMap fcm, string conceptName)
+        {
+            MultilayerCognitiveConceptState state = new MultilayerCognitiveConceptState();
+            MultilayerCognitiveConcept cog = fcm.GetConcept(conceptName);
+            //state.Name = cog.Name;
+            state.Aggregate = cog.ActivationLevel;
+            state.Levels = cog.LayerActivationLevels;
+            return state;
+        }
+
+        private MultilayerCognitiveConceptState MakeStateFromCognitiveConcept(MultilayerCognitiveConcept concept)
+        {
+            MultilayerCognitiveConceptState state = new MultilayerCognitiveConceptState();
+            //state.Name = concept.Name;
+            state.Aggregate = concept.ActivationLevel;
+            state.Levels = concept.LayerActivationLevels;
+            return state;
         }
 
     }
