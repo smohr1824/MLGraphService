@@ -8,8 +8,15 @@ namespace MLGraphService
 {
     public class MultilayerCognitiveConceptState
     {
+        public int Generation { get; set; }
         public float Aggregate { get; set; }
 
         public IEnumerable<ILayerActivationLevel> Levels { get; set; }
+    }
+
+    public class MultilayerCognitiveConceptStateVector
+    {
+        public string Name { get; set; }
+        public MultilayerCognitiveConceptState[] Generations { get; set; }
     }
 }
