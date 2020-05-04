@@ -26,6 +26,21 @@ namespace MLGraphService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // needed until and unless api is served from the same host as the client app
+            services.AddCors(options =>
+            {
+                options.AddPolicy("DevPolicy",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:4200",
+                                            "https://localhost:44319",
+                                            "https://localhost",
+                                            "http://localhsot:4200")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                    });
+            });
+                
             services.AddApiVersioning(opt =>
             {
                 opt.AssumeDefaultVersionWhenUnspecified = true;
@@ -49,6 +64,15 @@ namespace MLGraphService
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            // same as above for CORS
+            app.UseCors(builder =>
+                  builder
+                    .WithOrigins("http://localhost:4200")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials()
+                  );
 
             app.UseAuthorization();
 

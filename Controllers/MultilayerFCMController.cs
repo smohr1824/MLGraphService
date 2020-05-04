@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Policy;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Networks.Core;
@@ -12,6 +13,7 @@ using Networks.FCM;
 namespace MLGraphService.Controllers
 {
     [ApiController]
+    [EnableCors("DevPolicy")]    // for testing
     [Route("api/Multilayer/FCM")]
     public class MultilayerFCMController : ControllerBase
     {
@@ -20,7 +22,8 @@ namespace MLGraphService.Controllers
 
 
         [HttpGet("{name}/execute")]
-        public ActionResult<IEnumerable<MultilayerCognitiveConceptStateVector>> Execute(string name, int generations = 1)
+        [EnableCors("DevPolicy")]
+        public ActionResult<IEnumerable<MultilayerCognitiveConceptState>> Execute(string name, int generations = 1)
         {
             if (name == null || name == string.Empty)
                 return BadRequest("Name cannot be null or empty.");
@@ -38,31 +41,20 @@ namespace MLGraphService.Controllers
                 return NotFound();
             }
 
-
             fcm.Reset();
-            MultilayerCognitiveConceptStateVector[] results = new MultilayerCognitiveConceptStateVector[fcm.Concepts.Count()];
+            MultilayerCognitiveConceptState[] results = new MultilayerCognitiveConceptState[fcm.Concepts.Count() * generations];
 
             int k = 0;
-            foreach (MultilayerCognitiveConcept cog in fcm.Concepts.Values)
-            {
-                MultilayerCognitiveConceptStateVector vector = new MultilayerCognitiveConceptStateVector();
-                vector.Name = cog.Name;
-                vector.Generations = new MultilayerCognitiveConceptState[generations];
-                results[k++] = vector;
-            }
-           
-            
-            
             // iterate and return results
             for (int i = 0; i < generations; i++)
             {
                 fcm.StepWalk();
                 // report the desired concepts and their levels
-                  k = 0;
+
                 foreach (MultilayerCognitiveConcept cog in fcm.Concepts.Values)
                 {
-                    MultilayerCognitiveConceptStateVector vec = results[k++];
-                    vec.Generations[i] = MakeStateFromCognitiveConcept(cog, i + 1);
+                    //MultilayerCognitiveConceptStateVector vec = results[k++];
+                    results[k++] = MakeStateFromCognitiveConcept(cog, i + 1);
                 }
                 
             }
@@ -135,6 +127,7 @@ namespace MLGraphService.Controllers
         {
             MultilayerCognitiveConceptState state = new MultilayerCognitiveConceptState();
             MultilayerCognitiveConcept cog = fcm.GetConcept(conceptName);
+            state.Name = cog.Name;
             state.Generation = generation;
             state.Aggregate = cog.ActivationLevel;
             state.Levels = cog.LayerActivationLevels;
@@ -144,6 +137,7 @@ namespace MLGraphService.Controllers
         private MultilayerCognitiveConceptState MakeStateFromCognitiveConcept(MultilayerCognitiveConcept concept, int generation)
         {
             MultilayerCognitiveConceptState state = new MultilayerCognitiveConceptState();
+            state.Name = concept.Name;
             state.Generation = generation;
             state.Aggregate = concept.ActivationLevel;
             state.Levels = concept.LayerActivationLevels;
