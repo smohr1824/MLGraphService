@@ -38,7 +38,7 @@ namespace MLGraphService.Controllers
             }
             catch (KeyNotFoundException)
             {
-                return NotFound();
+                return NotFound($"{name} not found");
             }
 
             fcm.Reset();
