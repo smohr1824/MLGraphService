@@ -83,7 +83,7 @@ namespace MLGraphService.Controllers
             }
             catch(ArgumentNullException)
             {
-                return BadRequest("The request body mus tcontain an extended GML document describing a multilayer FCM");
+                return BadRequest("The request body must contain an extended GML document describing a multilayer FCM");
             }
 
             MultilayerFuzzyCognitiveMap fcm;
