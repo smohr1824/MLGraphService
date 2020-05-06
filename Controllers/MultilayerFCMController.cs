@@ -62,7 +62,7 @@ namespace MLGraphService.Controllers
             return results;
             
         }
-        // POST: api/Multilayer/FCM
+        // POST: api/Multilayer/FCM/{name}
         [HttpPost("{name}")]
         //[ValidateAntiForgeryToken]
         public async Task<ActionResult> Post(string name)
@@ -70,26 +70,14 @@ namespace MLGraphService.Controllers
             if (name == null || name == string.Empty)
                 return BadRequest("Name cannot be null or empty.");
 
-            StreamReader reader;
-            string body;
-            StringReader rdr;
+            MultilayerFuzzyCognitiveMap fcm;
             try
             {
-                // TODO: Fix MLFCMSerializer to do async reads
-                reader = new StreamReader(Request.Body);
-                body = await reader.ReadToEndAsync();
-                reader.Close();
-                rdr = new StringReader(body);
+                fcm = await PostPutCommon(Request);
             }
             catch(ArgumentNullException)
             {
                 return BadRequest("The request body must contain an extended GML document describing a multilayer FCM");
-            }
-
-            MultilayerFuzzyCognitiveMap fcm;
-            try
-            {
-                fcm = MLFCMSerializer.ReadNetwork(rdr);
             }
             catch(NetworkSerializationException ex)
             {
@@ -102,12 +90,87 @@ namespace MLGraphService.Controllers
 
             if (map.ContainsKey(name))
             {
-                return BadRequest($"Network {name} is already available. Consider PUT to modify the network.");
+                return Conflict($"Network {name} is already available. Consider PUT to modify the network.");
             } else
             {
                 map.Add(name, fcm);
                 return Ok();
             }
+
+        }
+
+        // PUT: api/Multilayer/FCM/{name}
+        [HttpPut("{name}")]
+        //[ValidateAntiForgeryToken]
+        public async Task<ActionResult> Put(string name)
+        {
+            if (name == null || name == string.Empty)
+                return BadRequest("Name cannot be null or empty.");
+            
+            MultilayerFuzzyCognitiveMap fcm;
+            try
+            {
+                fcm = await PostPutCommon(Request);
+            }
+            catch (ArgumentNullException)
+            {
+                return BadRequest("The request body must contain an extended GML document describing a multilayer FCM");
+            }
+            catch (NetworkSerializationException ex)
+            {
+                return BadRequest(ex.NetworkMessage);
+            }
+            catch (MLNetworkSerializationException mx)
+            {
+                return BadRequest(mx.MLNetworkMessage);
+            }
+
+            if (!map.ContainsKey(name))
+            {
+                return NotFound();
+            }
+            else
+            {
+                map[name] = fcm;
+                return Ok();
+            }
+
+        }
+
+        // DELETE: api/Multilayer/FCM/{name}
+        [HttpDelete("{name}")]
+        //[ValidateAntiForgeryToken]
+        public ActionResult Delete(string name)
+        {
+            if (name == null || name == string.Empty)
+                return BadRequest("Name cannot be null or empty.");
+
+            if (!map.ContainsKey(name))
+            {
+                return NotFound();
+            } 
+            else
+            {
+                map.Remove(name);
+                return Ok();
+            }
+        }
+
+        private async Task<MultilayerFuzzyCognitiveMap> PostPutCommon(HttpRequest request)
+        {
+            StreamReader reader;
+            string body;
+            StringReader rdr;
+
+            // TODO: Fix MLFCMSerializer to do async reads
+            reader = new StreamReader(Request.Body);
+            body = await reader.ReadToEndAsync();
+            reader.Close();
+            rdr = new StringReader(body);
+
+            MultilayerFuzzyCognitiveMap fcm;
+            fcm = MLFCMSerializer.ReadNetwork(rdr);
+            return fcm;
 
         }
 
