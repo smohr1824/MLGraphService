@@ -6,7 +6,9 @@ This is currently pre-production code to support the Angular graph-composer proj
 
 ### POST
 **URL**: api/multilayer/fcm/{name}
+
 **name**: name of FCM
+
 **Body**: GML syntax network definition 
 
 Adds a new multilayer to the server's collection of ML FCMs. On success, the map is available for
@@ -14,7 +16,9 @@ the remaining operations.
 
 ### PUT
 **URL**: api/multilayer/fcm/{name}
+
 ***name***: name of FCM
+
 **Body**: GML syntax network definitio
 
 Updates an existing ML FCM in the server's collection. The map remains available for 
@@ -22,7 +26,9 @@ the remaining operations.
 
 ### GET
 **URL**: api/multilayer/fcm/{name}?generations={steps}
+
 ***name***: name of FCM
+
 ***steps***: number of generations to execute
 
 Resets the network to its initial state, then steps through `steps` of network execution. A successful
@@ -31,6 +37,7 @@ by generation, and within each generation by concept.
 
 ### DELETE
 **URL**: api/multilayer/fcm/{name}
+
 **name**: name of FCM
 
 Removes a previously defined map from the server's collecton. The map is no longer available for other
