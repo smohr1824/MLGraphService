@@ -87,6 +87,10 @@ namespace MLGraphService.Controllers
             {
                 return BadRequest(mx.MLNetworkMessage);
             }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             if (map.ContainsKey(name))
             {
@@ -123,6 +127,10 @@ namespace MLGraphService.Controllers
             catch (MLNetworkSerializationException mx)
             {
                 return BadRequest(mx.MLNetworkMessage);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
 
             if (!map.ContainsKey(name))
