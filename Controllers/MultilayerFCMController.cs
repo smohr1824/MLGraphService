@@ -53,7 +53,6 @@ namespace MLGraphService.Controllers
 
                 foreach (MultilayerCognitiveConcept cog in fcm.Concepts.Values)
                 {
-                    //MultilayerCognitiveConceptStateVector vec = results[k++];
                     results[k++] = MakeStateFromCognitiveConcept(cog, i + 1);
                 }
                 
